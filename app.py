@@ -27,7 +27,7 @@ def ask_question(question: str, dataframe, llm_instance):
     The final answer must be stored in a variable called `result`.
 
     Dataframe sample:
-    {dataframe.head().to_markdown()}
+    {dataframe.to_markdown()}
 
     Question: {question}
 
