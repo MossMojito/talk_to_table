@@ -13,7 +13,7 @@ def setup_backend():
     print("Setting up backend...")
     try:
         # The API key is securely fetched from Streamlit's secrets manager
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", google_api_key=st.secrets["GOOGLE_API_KEY"])
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", google_api_key=st.secrets["AIzaSyC4WcMfcq_WHIyZZ1MD9kl8vD6z2Aty3Rg"])
         print("Backend setup complete.")
         return llm
     except Exception as e:
