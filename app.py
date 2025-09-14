@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
-import ollama
 import re
-from langchain_community.llms import Ollama
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Talk to Your Data", layout="centered")
@@ -10,20 +9,19 @@ st.set_page_config(page_title="Talk to Your Data", layout="centered")
 # --- BACKEND SETUP ---
 @st.cache_resource
 def setup_backend():
-    """Function to set up and cache the Ollama LLM."""
+    """Sets up the Google Gemini LLM using the secret API key."""
     print("Setting up backend...")
     try:
-        ollama.pull('phi3')
-        llm = Ollama(model="phi3")
+        # The API key is securely fetched from Streamlit's secrets manager
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", google_api_key=st.secrets["GOOGLE_API_KEY"])
         print("Backend setup complete.")
         return llm
     except Exception as e:
-        st.error(f"Ollama connection failed. Please ensure Ollama is running on your local machine. Error: {e}")
+        st.error(f"Failed to set up the backend. Have you added your GOOGLE_API_KEY to Streamlit Secrets? Error: {e}")
         st.stop()
 
 # --- HELPER FUNCTION ---
 def ask_question(question: str, dataframe, llm_instance):
-    """Generates and executes Python code to answer a question about a dataframe."""
     prompt = f"""
     Given a pandas dataframe named `df`, write a short python script to answer the following question.
     The final answer must be stored in a variable called `result`.
@@ -38,7 +36,9 @@ def ask_question(question: str, dataframe, llm_instance):
     # Your code here
     ```
     """
-    response_code = llm_instance.invoke(prompt)
+    response = llm_instance.invoke(prompt)
+    response_code = response.content # .content is used for Gemini
+    
     match = re.search(r"```python\n(.*?)\n```", response_code, re.DOTALL)
     if match:
         code_to_execute = match.group(1)
@@ -51,6 +51,7 @@ def ask_question(question: str, dataframe, llm_instance):
         result = local_scope.get('result', 'No result found in the executed code.')
     except Exception as e:
         result = f"An error occurred: {e}"
+        
     return result, code_to_execute
 
 # --- MAIN APP INTERFACE ---
